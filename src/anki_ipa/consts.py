@@ -8,6 +8,7 @@ License: GNU AGPLv3 <https://www.gnu.org/licenses/agpl.html>
 """
 
 LANGUAGES_MAP = {
+    'eng_dict_us': 'dict_us',
     'eng_a': 'american',
     'eng_b': 'british',
     'ru': 'russian',

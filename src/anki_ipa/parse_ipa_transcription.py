@@ -11,7 +11,7 @@ import urllib
 import bs4
 import re
 import requests
-from typing import List
+from typing import List, Optional
 
 # Create a dictionary for all transcription methods
 transcription_methods = {}
@@ -66,6 +66,52 @@ def american(word: str) -> str:
         return remove_special_chars(word=ipa)
     except (KeyError, AttributeError):
         return ""
+
+@transcription
+def dict_us(word: str) -> str:
+    try:
+        search_word = word.replace(' ', '+')
+        ipa = __search_oxford(search_word)
+        if ipa is None:
+            ipa = __search_cambridge(search_word)
+        if ipa is None:
+            ipa = __search_wordhunt(search_word)
+        if ipa is None:
+            ipa = ' '.join([american(x) for x in word.split(' ')])
+        return remove_special_chars(word=ipa)
+    except (KeyError, AttributeError):
+        return ""
+
+
+def __search_oxford(word: str) -> str:
+    p = re.compile(r"phons_n_am.*?\"phon\">/(?P<ipa>.*?)/")
+    return __search_dict('https://www.oxfordlearnersdictionaries.com/search/english/direct/?q=' + word, p)
+
+
+def __search_cambridge(word: str) -> str:
+    p = re.compile(r"us dpron.*?lpl-1\">(?P<ipa>.*?)</")
+    return __search_dict('https://dictionary.cambridge.org/search/direct/?datasetsearch=english&q=' + word, p)
+
+
+def __search_wordhunt(word: str) -> str:
+    p = re.compile(r"transcription.*?\|(?P<ipa>.*?)\|<")
+    return __search_dict('https://wooordhunt.ru/word/' + word, p)
+
+
+def __search_dict(url: str, p: re.Pattern[str]) -> Optional[str]:
+    try:
+        r = requests.get(url, 
+            headers={'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'})
+        m = p.search(r.text.replace('\n', ' '))
+        if m is not None:
+            match = m.group('ipa')
+            if len(match) > 50:
+                return None
+            return match
+        return None
+    except:
+        return None
+    
 
 @transcription
 def russian(word: str) -> str:
