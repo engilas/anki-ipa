@@ -52,7 +52,8 @@ def paste_ipa(editor: Editor) -> None:
     field_text = field_text.lower()
 
     # get word list from text field
-    words = [field_text] #utils.get_words_from_field(field_text)
+    #words = [field_text] #utils.get_words_from_field(field_text)
+    words = utils.get_words_from_field(field_text)
     logging.debug(f"Word list: {words}")
 
     # parse IPA transcription for every word in word list
